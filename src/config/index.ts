@@ -2,6 +2,8 @@ export interface Config {
     LOGIN_EXPIRE: number;
 
     SUCCESS_CODE: number;
+
+    BASENAME: string;
 }
 
 const AdminConfig: Config = {
@@ -10,6 +12,9 @@ const AdminConfig: Config = {
 
     // 请求成功状态码
     SUCCESS_CODE: 200,
+
+    // react-router的basename
+    BASENAME: '/web',
 };
 
 export default AdminConfig;
