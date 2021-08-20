@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+import { Button, Spin } from 'antd';
+import 'antd/dist/antd.css';
+
+import './App.less';
 
 function App() {
     return (
-        <div>
-            111
-        </div>
+        <Suspense fallback={<Spin size="large" className="layout__loading" />}>
+            <Button>222</Button>
+        </Suspense>
     );
 }
 

@@ -18,8 +18,20 @@ module.exports = {
                 exclude: /node_modules/,
             },
             {
-                use: ['style-loader', 'css-loader', 'less-loader'],
                 test: /\.(css|less)$/,
+                use: [
+                    { loader: 'style-loader' },
+                    { loader: 'css-loader' },
+                    {
+                        loader: 'less-loader',
+                        options: {
+                            lessOptions: {
+                                // https://blog.csdn.net/wuyujin1997/article/details/111999322
+                                javascriptEnabled: true,
+                            },
+                        },
+                    },
+                ],
             },
             {
                 type: 'asset',

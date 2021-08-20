@@ -10,12 +10,14 @@
         "test-c": "jest --coverage"
     },
     "dependencies": {
+        "-": "^0.0.1",
         "@reduxjs/toolkit": "^1.6.1",
+        "D": "^1.0.0",
         "antd": "^4.16.12",
         "axios": "^0.21.1",
         "core-js": "^3.9.0",
-        "react": "^17.0.1",
-        "react-dom": "^17.0.1",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2",
         "react-redux": "^7.2.4",
         "react-router-dom": "^5.2.0"
     },
@@ -31,7 +33,7 @@
         "@types/enzyme": "^3.10.4",
         "@types/enzyme-adapter-react-16": "^1.0.5",
         "@types/enzyme-to-json": "^1.5.3",
-        "@types/react": "^17.0.15",
+        "@types/react": "^17.0.19",
         "@types/react-dom": "^17.0.9",
         "@types/react-redux": "^7.1.18",
         "@typescript-eslint/parser": "^4.28.5",

@@ -1,74 +1,83 @@
-import axios, { AxiosRequestConfig } from 'axios';
-import { message as $message } from 'antd';
+import { message, Modal } from 'antd';
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import AdminConfig from 'config';
+import { configure } from 'enzyme';
 
-const axiosInstance = axios.create({
-  timeout: 6000
-});
+interface ResponseData<T> {
+    code: number;
 
-axiosInstance.interceptors.request.use(
-  config => {
-    return config;
-  },
-  error => {
-    Promise.reject(error);
-  }
-);
+    data: T;
 
-axiosInstance.interceptors.response.use(
-  config => {
-    if (config?.data?.message) {
-      // $message.success(config.data.message)
-    }
-    return config?.data;
-  },
-  error => {
-    let errorMessage = '系统异常';
-    if (error?.message?.includes('Network Error')) {
-      errorMessage = '网络错误，请检查您的网络';
-    } else {
-      errorMessage = error?.message;
-    }
-    console.dir(error);
-    error.message && $message.error(errorMessage);
-    return {
-      status: false,
-      message: errorMessage,
-      result: null
-    };
-  }
-);
+    msg: string;
+}
 
-export type Response<T = any> = {
-  status: boolean;
-  message: string;
-  result: T;
+// 1、指定axios请求类型
+axios.defaults.headers = {
+    'Content-Type': 'application/json;charset=utf-8',
 };
 
-type Method = 'get' | 'post';
+// 2、指定请求地址
+axios.defaults.baseURL = process.env.NODE_ENV === 'production' ? '生产地址：http://xxx.com/api' : '';
 
-export type MyResponse<T = any> = Promise<Response<T>>;
+// 3、添加请求拦截器
+axios.interceptors.request.use(
+    (config: AxiosRequestConfig) => {
+        // const token = getToken();   真实项目用真实接口做登录，获取token
+        const token = 'djasjasjdlasdljdadjasdlas21212331232dsaljasd';
 
-/**
- *
- * @param method - request methods
- * @param url - request url
- * @param data - request data or params
- */
-export const request = <T = any>(
-  method: Method,
-  url: string,
-  data?: any,
-  config?: AxiosRequestConfig
-): MyResponse<T> => {
-  // const prefix = '/api'
-  const prefix = '';
-  url = prefix + url;
-  if (method === 'post') {
-    return axiosInstance.post(url, data, config);
-  } else {
-    return axiosInstance.get(url, {
-      params: data,
-      ...config
-    });
-  }
-};
+        // 获取用户token后，加入到请求头里，用于后面的业务接口请求做身份验证
+        if (token) {
+            config.headers.token = token;
+        }
+
+        return config;
+    },
+    (error: AxiosError) => Promise.reject(error)
+);
+
+// 4、添加响应拦截器，拦截登录过期或者没有权限的请求
+axios.interceptors.response.use(
+    (response: AxiosResponse<ResponseData<any>>) => {
+        if (!response.data) {
+            return Promise.resolve(response);
+        }
+
+        // 登录过期或者未登录，弹窗提示去重新登陆
+        if (response.data.code === AdminConfig.LOGIN_EXPIRE) {
+            Modal.confirm({
+                title: '系统提示',
+                content: response.data.msg,
+                okText: '重新登陆',
+                onOk() {
+                    // store.dispatch(clearSideBarRoutes());
+                    // store.dispatch(logout());
+                    // 直接跳转到登录页
+                    window.location.href = `${window.location.origin}/web/system/login?redirectURL=${encodeURIComponent(
+                        window.location.href
+                    )}`;
+                },
+                onCancel() {},
+            });
+            return Promise.reject(new Error(response.data.msg));
+        }
+
+        // 请求成功
+        if (response.data.code === AdminConfig.SUCCESS_CODE) {
+            // 这里要做类型断言，否则不匹配response的类型声明
+            return response.data as any;
+        }
+
+        // 请求成功，状态不为200时
+        message.error(response.data.msg);
+        return Promise.reject(new Error(response.data.msg));
+    },
+    (error: AxiosError) => {
+        message.error(error.message);
+        return Promise.reject(error);
+    }
+);
+
+// 5、封装统一发起请求的函数
+export function request<T>(options: AxiosRequestConfig) {
+    return axios.request<T>(options);
+}
